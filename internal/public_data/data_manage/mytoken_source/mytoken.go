@@ -3,8 +3,8 @@ package mytoken_source
 import (
 	"context"
 	"crypto/md5"
-	dal2 "cybercoin/dal"
-	"cybercoin/dataSource"
+	"cybercoin/dal/data_object"
+	data_manage2 "cybercoin/internal/public_data/data_manage"
 	"encoding/hex"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
@@ -29,15 +29,15 @@ const (
 type MytokenServie struct {
 }
 
-func (s *MytokenServie) QueryNow(ctx context.Context, base, coin string) dal2.CoinHisPrice {
+func (s *MytokenServie) QueryNow(ctx context.Context, base, coin string) data_object.CoinHisPrice {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (*MytokenServie) QueryHistory(ctx context.Context, query dataSource.CoinHistoryQuery) []*dal2.CoinHisPrice {
+func (*MytokenServie) QueryHistory(ctx context.Context, query data_manage2.CoinHistoryQuery) []*data_object.CoinHisPrice {
 	url := BuildUrl(query)
 	history := QueryBatch(url)
-	res := []*dal2.CoinHisPrice{}
+	res := []*data_object.CoinHisPrice{}
 	for history.Message == "Success" && len(history.Data.KlineList) > 0 {
 		early := history.Data.KlineList[len(history.Data.KlineList)-1].Time
 		if cast.ToInt(query.Begin.Unix()) >= early {
@@ -49,7 +49,7 @@ func (*MytokenServie) QueryHistory(ctx context.Context, query dataSource.CoinHis
 		list := history.Data.KlineList
 		batchRes := BuildResult(list, query)
 		if query.Write {
-			dal2.MySql.CreateInBatches(batchRes, 240)
+			data_object.MySql.CreateInBatches(batchRes, 240)
 		}
 
 		res = append(res, batchRes...)
@@ -86,10 +86,10 @@ func QueryBatch(url string) *KlineHistory {
 	})
 	return &history
 }
-func BuildResult(list []*Param, query dataSource.CoinHistoryQuery) []*dal2.CoinHisPrice {
-	histories := []*dal2.CoinHisPrice{}
+func BuildResult(list []*Param, query data_manage2.CoinHistoryQuery) []*data_object.CoinHisPrice {
+	histories := []*data_object.CoinHisPrice{}
 	for _, param := range list {
-		history := dal2.CoinHisPrice{}
+		history := data_object.CoinHisPrice{}
 		history.Coin = query.Coin
 		history.Base = query.Base
 		history.Time = time.Unix(cast.ToInt64(param.Time), 0)
@@ -99,9 +99,9 @@ func BuildResult(list []*Param, query dataSource.CoinHistoryQuery) []*dal2.CoinH
 		history.Close = param.Close
 		history.Volumefrom = param.Volumefrom
 		switch query.Interval {
-		case dataSource.Minutely:
+		case data_manage2.Minutely:
 			history.Period = "1m"
-		case dataSource.Quarterly:
+		case data_manage2.Quarterly:
 			history.Period = "15m"
 
 		}
@@ -111,7 +111,7 @@ func BuildResult(list []*Param, query dataSource.CoinHistoryQuery) []*dal2.CoinH
 	return histories
 }
 
-func BuildUrl(query dataSource.CoinHistoryQuery) string {
+func BuildUrl(query data_manage2.CoinHistoryQuery) string {
 	stamp := time.Now().UnixMilli()
 	stampStr := cast.ToString(stamp)
 	token := BuildKLineToken(stampStr)
@@ -123,9 +123,9 @@ func BuildUrl(query dataSource.CoinHistoryQuery) string {
 	url += "&time=" + cast.ToString(query.End.Unix())
 	url += "&market_id=" + Market_id
 	switch query.Interval {
-	case dataSource.Quarterly:
+	case data_manage2.Quarterly:
 		url += "&period=15m"
-	case dataSource.Minutely:
+	case data_manage2.Minutely:
 		url += "&period=1m"
 	default:
 		url += "&period=15m"

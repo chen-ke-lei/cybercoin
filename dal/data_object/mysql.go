@@ -1,4 +1,4 @@
-package dal
+package data_object
 
 import (
 	"fmt"

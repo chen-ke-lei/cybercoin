@@ -1,4 +1,4 @@
-package trade_item
+package trade
 
 import (
 	"context"
@@ -27,4 +27,3 @@ func (a *AccountBase) Trade(ctx context.Context, base, coin string, sellMount, b
 	coinAsset.Num += buyMount
 
 }
-
