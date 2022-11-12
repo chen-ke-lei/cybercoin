@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"cybercoin/dal/data_object"
+	"cybercoin/dal/mysql"
 	data_manage2 "cybercoin/internal/public_data/data_manage"
 	"encoding/hex"
 	"fmt"
@@ -49,7 +50,7 @@ func (*MytokenServie) QueryHistory(ctx context.Context, query data_manage2.CoinH
 		list := history.Data.KlineList
 		batchRes := BuildResult(list, query)
 		if query.Write {
-			data_object.MySql.CreateInBatches(batchRes, 240)
+			mysql.MySql.CreateInBatches(batchRes, 240)
 		}
 
 		res = append(res, batchRes...)
