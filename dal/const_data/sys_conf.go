@@ -1,4 +1,4 @@
-package const_dal
+package const_data
 
 const (
 	PROJECT_NAME = "cybercoin"
