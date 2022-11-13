@@ -13,7 +13,7 @@ type CoinHisPrice struct {
 	Coin   string
 	Period string
 	Source string
-	Type   int
+	Type   string
 	Market int
 }
 

@@ -13,11 +13,10 @@ type DataSource interface {
 type CoinHistoryQuery struct {
 	Coin   string
 	Anchor string
-	Begin  time.Time
-	End    time.Time
-	Period time.Duration
-	Write  bool
-	Type   InstType
+	Begin  *time.Time
+	End    *time.Time
+	Period string
+	Type   string
 }
 
 type InstType int
